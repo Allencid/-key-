@@ -1,0 +1,8 @@
+streamlit
+openai
+pandas
+plotly
+matplotlib
+wordcloud
+snownlp
+ckip-transformers
