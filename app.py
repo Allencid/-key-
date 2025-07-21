@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+import openai
 import pandas as pd
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
@@ -8,9 +8,9 @@ from snownlp import SnowNLP
 from ckip_transformers.nlp import CkipWordSegmenter, CkipPosTagger
 import json
 
-# 📌 CKIP 斷詞器與詞性標註器（初始化一次即可）
-ws = CkipWordSegmenter(model="bert-base")
-pos = CkipPosTagger(model="bert-base")
+# 📌 CKIP 斷詞器與詞性標註器（使用 CPU 強制避免錯誤）
+ws = CkipWordSegmenter(model="bert-base", device=-1)
+pos = CkipPosTagger(model="bert-base", device=-1)
 
 # 📌 頁面設定
 st.set_page_config(page_title="中文陳述分析系統", layout="wide")
@@ -18,9 +18,8 @@ st.title("📊 中文陳述主題與詞性分析系統")
 
 # 📌 輸入 OpenAI API Key
 api_key = st.text_input("請輸入你的 OpenAI API Key", type="password")
-client = None
 if api_key:
-    client = OpenAI(api_key=api_key)
+    openai.api_key = api_key
 
 # 📌 輸入陳述資料與主題數目
 statement_text = st.text_area("請貼上你的中文陳述資料", height=300)
@@ -50,12 +49,12 @@ def analyze_statement_to_timeline(statement, num_topics):
 陳述資料：
 {statement}
 """
-    response = client.chat.completions.create(
+    response = openai.ChatCompletion.create(
         model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2
     )
-    return response.choices[0].message.content
+    return response.choices[0].message['content']
 
 # 📌 按鈕觸發分析
 if st.button("開始分析"):
@@ -152,4 +151,3 @@ if st.button("開始分析"):
 
             except Exception as e:
                 st.error(f"分析發生錯誤：{e}")
-
